@@ -34,6 +34,13 @@ function App() {
     const submit = (e) => {
         e.preventDefault();
         console.log(data)
+        setData({
+            name: "",
+            group: "",
+            date: "",
+            email: "",
+            phone: ""
+        })
         axios.post(`${BASE_API}`,{
             name : data.name,
             group: data.group,
