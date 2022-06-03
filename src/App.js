@@ -34,15 +34,14 @@ function App() {
     const submit = (e) => {
         e.preventDefault();
         console.log(data)
-        setData("")
-      // axios.post(`${BASE_API}`,{
-      //       name : data.name,
-      //       group: data.group,
-      //       date: data.date,
-      //       email: data.email,
-      //       phone: data.phone
-      //   }).then((res) => res.data)
-      //   alert("Добавлено успешно!")
+        axios.post(`${BASE_API}`,{
+            name : data.name,
+            group: data.group,
+            date: data.date,
+            email: data.email,
+            phone: data.phone
+        }).then((res) => res.data)
+        alert("Добавлено успешно!")
     }
     if(isLoading) {
         return <Spinner />
