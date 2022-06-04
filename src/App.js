@@ -6,7 +6,9 @@ import {BASE_API} from "./constants/constants";
 
 function App() {
     const [students,setStudents] = useState([])
-    const [data,setData] = useState({
+    const [isEditing,setIsEditing] = useState(false)
+    const [updateUserId,setUpdateUserId] = useState(null)
+    const [newStudent,setNewStudent] = useState({
         name : "",
         group: "",
         date: "",
@@ -20,35 +22,54 @@ function App() {
                     setStudents(res.data)
                     setIsLoading(false)
                 })
-        },[data])
-    const deleteStudent = async(id) => {
-        await axios.delete(`${BASE_API}${id}`)
-         const studentList = students.filter((item) => item.id !== id)
-         setStudents(studentList)
+        })
+
+    const handleChange = (e) => {
+        setNewStudent({...newStudent, [e.target.id]: e.target.value})
     }
-    const handle = (e) => {
-        const newData = {...data}
-        newData[e.target.id] = e.target.value
-        setData(newData)
-    }
-    const submit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
-        console.log(data)
-        setData({
+        const uploadUser = await axios.post(`${BASE_API}`,newStudent)
+        setStudents([...students,uploadUser.data])
+        setNewStudent({
             name: "",
             group: "",
             date: "",
             email: "",
             phone: ""
         })
-        axios.post(`${BASE_API}`,{
-            name : data.name,
-            group: data.group,
-            date: data.date,
-            email: data.email,
-            phone: data.phone
-        }).then((res) => res.data)
-        alert("Добавлено успешно!")
+    }
+
+    const handleEdite = (student) => {
+        setIsEditing(true)
+        setUpdateUserId(student.id)
+        setNewStudent({
+            name: student.name,
+            group: student.group,
+            date: student.date,
+            email: student.email,
+            phone: student.phone
+        })
+
+    }
+    const updateUser = async(e) => {
+        e.preventDefault()
+        setIsEditing(false)
+        const {data:updatedUser} = await axios.put(`${BASE_API}/${updateUserId}`,newStudent)
+        const updateStudentList = students.map(item => item.id === updatedUser.id? updatedUser:item)
+        setStudents(updateStudentList)
+        setNewStudent({
+            name: "",
+            group: "",
+            date: "",
+            email: "",
+            phone: ""
+        })
+    }
+    const deleteStudent = async(id) => {
+        await axios.delete(`${BASE_API}${id}`)
+        const studentList = students.filter((item) => item.id !== id)
+        setStudents(studentList)
     }
     if(isLoading) {
         return <Spinner />
@@ -58,67 +79,74 @@ function App() {
             <div className="w-full bg-grey-500">
                 <div className="container mx-auto py-8">
                     <div className="w-96 mx-auto bg-white rounded shadow">
-                        <div className="mx-16 py-4 px-8 text-black text-xl font-bold border-b border-grey-500">Добавить студента
+                        <div className="mx-16 py-4 px-8 text-black text-lg font-bold border-b border-grey-500">Добавить студента
                         </div>
-                        <form onSubmit={(e) => submit(e)} name="student_application" id="student_application">
+                        <form onSubmit={isEditing ? updateUser: handleSubmit} name="student_application" id="student_application">
                             <div className="py-4 px-8">
                                 <div className="mb-2">
-                                    <label className="block text-grey-darker text-sm font-bold mb-2">Ф.И.О студента:</label>
-                                    <input required="required" onChange={(e) => handle(e)}
+                                    <label htmlFor="name" className="block text-grey-darker text-xm font-bold mb-2">Ф.И.О студента</label>
+                                    <input required="required" onChange={handleChange}
+                                           value={newStudent.name}
                                         className=" border rounded w-full py-2 px-3 text-grey-darker"
                                         type="text" id="name"
-                                        placeholder="Enter Student Name"/>
+                                           name="name"
+                                           placeholder="Enter student name"
+                                           />
+
                                 </div>
                                  <div className="mb-2">
-                                    <label className="block text-grey-darker text-sm font-bold mb-2">Группа:</label>
+                                    <label htmlFor="group" className="block text-grey-darker text-xm font-bold mb-2">Группа</label>
                                     <input required="required"
-                                         onChange={(e) => handle(e) }
-                                           value={data.group}
+                                         onChange={handleChange}
+                                           value={newStudent.group}
                                            id="group"
+                                           name="group"
                                         className=" border rounded w-full py-2 px-3 text-grey-darker"
-                                           type="number"
-                                           placeholder="Enter Your Group number"/>
-
+                                           type="text"
+                                           placeholder="Enter your group number"/>
                                 </div>
-
                                 <div className="mb-2">
-                                    <label className="block text-grey-darker text-sm font-bold mb-2">Год поступления:</label>
+                                    <label htmlFor="date" className="block text-grey-darker text-xm font-bold mb-2">Год поступления</label>
                                     <input required="required"
-                                        onChange={(e) => handle(e)}
-                                           value={data.date}
+                                        onChange={handleChange}
+                                           name="date"
+                                           value={newStudent.date}
                                         className=" border w-full py-2 px-3 text-grey-darker"
                                            type="date"
                                            id="date"
-                                           placeholder="Enter Your Date"/>
+                                           placeholder="Enter your date"/>
 
                                 </div>
                                 <div className="mb-2">
-                                    <label className=" text-grey-darker text-sm font-bold mb-2">E-mail</label>
+                                    <label htmlFor="email" className=" text-grey-darker text-xm font-bold mb-2">E-mail</label>
                                     <input required="required"
-                                        onChange={(e) => handle(e)}
-                                           value={data.email}
+                                        onChange={handleChange}
+                                           name="email"
+                                           value={newStudent.email}
                                         className=" border rounded w-full py-2 px-3 text-grey-darker"
                                         type="email"
                                          id="email"
-                                        placeholder="Enter Your E-mail"/>
+                                        placeholder="Enter your E-mail"/>
 
                                 </div>
                                 <div className="mb-2">
-                                    <label className=" text-grey-darker text-sm font-bold mb-2">Номер телефона</label>
+                                    <label htmlFor="phone" className=" text-grey-darker text-xm font-bold mb-2">Номер телефона</label>
                                     <input required="required"
-                                        onChange={(e) => handle(e)}
-                                           value={data.phone}
-                                        className=" border rounded w-full py-3 px-3 text-grey-darker"
+                                        onChange={handleChange}
+                                           value={newStudent.phone}
+                                        className=" border rounded w-full py-3 px-3 text-grey-darker text-xm"
                                         type="phone"
                                         id="phone"
-                                        placeholder="Enter Your Phone Number"/>
+                                           name="phone"
+                                        placeholder="Enter your phone number"/>
 
                                 </div>
                                 <div className="mb-2">
-                                    <button onClick={(e) => submit(e) }
-                                            type="submit"
-                                        className=" ml-16  rounded-full py-2 px-10 bg-gradient-to-r from-green-400 to-blue-500 hover:bg-sky-700 ">
-                                      Добавить
+                                    <button
+                                        type="submit"
+                                        className=" mx-20 rounded-full py-2 px-10 text-white-300 bg-blue-500 hover:bg-sky-700 "
+                                    >
+                                        {isEditing?'Update': 'Create'}
                                     </button>
                                 </div>
                             </div>
@@ -151,7 +179,7 @@ function App() {
                         Номер телефона
                     </th>
                     <th className=" w-1/7  min-w-[160px] text-lg  font-semibold text-white py-4  lg:py-7 lg:px-4  border-l border-transparent">
-                       Удалить
+                       Options
                     </th>
                 </tr>
                 </thead>
@@ -178,11 +206,17 @@ function App() {
                                 {student.phone}
                             </td>
                             <td className=" text-center text-dark text-base  py-5  px-2  bg-[#F3F6FF] border-b border-l border-[#E8E8E8]">
+                                <button onClick={() => handleEdite(student)}
+                                        className="border border-primary mr-2 py-2 px-4  inline-block rounded bg-yellow-500 text-white hover:text-black-300  hover:bg-amber-700 "
+                                        type="submit"
+                                >
+                                    Edite
+                                </button>
                                 <button onClick={() => deleteStudent(student.id)}
-                                        className="border border-primary  py-2 px-4  inline-block rounded bg-red-500 text-white hover:bg-white-800 hover:text-red-300 "
+                                        className="border border-primary  py-2 px-4  inline-block rounded bg-red-700 text-white hover:bg-red-400 hover:text-black-300 "
                                 type="submit"
                                 >
-                                    Удалить
+                                  Delete
                                 </button>
                             </td>
                         </tr>
