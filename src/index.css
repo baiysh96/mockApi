@@ -16,6 +16,22 @@ code {
     monospace;
 }
 .spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-top: 100px;
-  text-align: center;
+}
+.modalBtn {
+  margin: 20px 20px;
+  padding: 6px 13px;
+  background: green;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  color: snow;
+  transition: 0.5s;
+}
+.modalBtn:hover {
+  background-color: yellowgreen;
+  color: black;
 }
