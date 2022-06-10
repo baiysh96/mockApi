@@ -1,7 +1,7 @@
 .modal {
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0,0,0,0.5);
     position: fixed;
     top: 0;
     left: 0;
@@ -18,11 +18,10 @@
 
 }
 .modal__content {
-    background-color: navajowhite;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
     border-radius: 12px;
     transform: scale(0.5);
     transition: 0.5s all;

@@ -1,13 +1,15 @@
 import './App.css';
 import {useEffect, useState} from "react";
-import { useForm } from "react-hook-form";
+import {useForm} from "react-hook-form"
 import axios from "axios";
 import Spinner from "./components/Spinner";
 import {BASE_API} from "./constants/constants";
 import Modal from "./components/Modal";
 
 function App() {
-    const { register, formState: { errors } } = useForm()
+    const { register,formState: { errors,isValid } } = useForm({
+        mode: "onBlur",
+    })
     const [modalActive,setModalActive] = useState(false)
     const [students,setStudents] = useState([])
     const [isEditing,setIsEditing] = useState(false)
@@ -80,7 +82,7 @@ function App() {
     }
     return (
         <div className="container m-auto my-14">
-            <button onClick={() => setModalActive(true) || setIsEditing(false)} type="button" className="modalBtn">Add new student</button>
+            <button onClick={() => setModalActive(true)} type="button" className="modalBtn">Add new student</button>
             <table className="table-auto w-full">
                 <thead>
                 <tr className="bg-blue-600 text-center">
@@ -121,7 +123,7 @@ function App() {
                                 {student.group}
                             </td>
                             <td className=" text-center text-dark text-base  py-5  px-2  bg-[#F3F6FF] border-b border-l border-[#E8E8E8]">
-                                {student.year.split("-").reverse().join("-")}
+                                {student.year}
                             </td>
                             <td className=" text-center text-dark text-base  py-5  px-2  bg-[#F3F6FF] border-b border-l border-[#E8E8E8]">
                                 {student.email}
@@ -132,13 +134,13 @@ function App() {
                             <td className=" text-center text-dark text-base  py-5  px-2  bg-[#F3F6FF] border-b border-l border-[#E8E8E8]">
                                 <button onClick={() => handleEdite(student) || setModalActive(true)}
                                         className="border border-primary mr-2 py-2 px-4  inline-block rounded bg-yellow-500 text-white hover:text-black-300  hover:bg-amber-700 "
-                                        type="submit"
+                                        type="button"
                                 >
                                     Edite
                                 </button>
                                 <button onClick={() => deleteStudent(student.id)}
                                         className="border border-primary  py-2 px-4  inline-block rounded bg-red-700 text-white hover:bg-red-400 hover:text-black-300 "
-                                        type="submit"
+                                        type="button"
                                 >
                                     Delete
                                 </button>
@@ -148,8 +150,8 @@ function App() {
                 }
                 </tbody>
             </table>
-            <Modal active={modalActive} setActive={setModalActive} setNewStudent={setNewStudent} >
-                <div className="w-full bg-grey-500">
+            <Modal active={modalActive} setActive={setModalActive} setStudents={setStudents} >
+                <div >
                     <div onClick={() =>
                         setModalActive(false) ||
                         setNewStudent({
@@ -160,8 +162,8 @@ function App() {
                             phone: ""
                         })
                     }
-                         className="absolute right-6 top-6 cursor-pointer">
-                        <strong>x</strong>
+                         className="absolute right-6 top-10 cursor-pointer">
+                        <strong>X</strong>
                     </div>
                     <div className="container mx-auto py-8">
                         <div className="w-96 mx-auto bg-white rounded shadow">
@@ -170,42 +172,53 @@ function App() {
                             </div>
                             <form
                                 onSubmit={isEditing ? updateUser: handleSubmit}
-                                name="student_application" id="student_application">
+                               >
                                 <div className="py-4 px-8">
                                     <div className="mb-2">
                                         <label htmlFor="name"
                                                className="block text-grey-darker text-xm font-bold mb-2">
                                             Ф.И.О студента
                                         </label>
-                                        <input required="required" onChange={handleChange}
+                                        <input {...register("name",{ required: true })}
+                                               onChange={handleChange}
                                                value={newStudent.name}
                                                className=" border rounded w-full py-2 px-3 text-grey-darker"
                                                type="text" id="name"
                                                name="name"
                                                placeholder="Enter student name"
                                         />
+                                        {errors.name && <span style={{
+                                            marginTop:"10px",
+                                            color:"red",
+                                            fontSize:"14px"
+                                         }}>This field is required</span>}
 
                                     </div>
                                     <div className="mb-2">
                                         <label htmlFor="group" className="block text-grey-darker text-xm font-bold mb-2">
                                             Группа
                                         </label>
-                                        <input required="required"
+                                        <input {...register("group",{ required: true })}
                                                onChange={handleChange}
                                                value={newStudent.group}
                                                id="group"
                                                name="group"
                                                className=" border rounded w-full py-2 px-3 text-grey-darker"
                                                type="text"
-                                               placeholder="Enter your group number"/>
+                                               placeholder="Enter your group number"
+                                        />
+                                        {errors.group && <span style={{
+                                            marginTop:"10px",
+                                            color:"red",
+                                            fontSize:"14px"
+                                        }}>This field is required</span>}
                                     </div>
                                     <div className="mb-2">
                                         <label htmlFor="year"
                                                className="block text-grey-darker text-xm font-bold mb-2">
                                             Год поступления
                                         </label>
-                                        <input
-                                            {...register("year",{required:true})}
+                                        <input {...register("year",{ required: true })}
                                                onChange={handleChange}
                                                name="year"
                                                value={newStudent.year}
@@ -213,7 +226,11 @@ function App() {
                                                type="date"
                                                id="year"
                                                placeholder="Enter your date"/>
-                                         {errors.year && <span style={{color:"red",fontSize:"8"}}>This field is required</span>}
+                                        {errors.year && <span style={{
+                                            marginTop:"10px",
+                                            color:"red",
+                                            fontSize:"14px"
+                                        }}>This field is required</span>}
 
                                     </div>
                                     <div className="mb-2">
@@ -221,7 +238,7 @@ function App() {
                                                className=" text-grey-darker text-xm font-bold mb-2">
                                             E-mail
                                         </label>
-                                        <input required="required"
+                                        <input {...register("email",{ required: true })}
                                                onChange={handleChange}
                                                name="email"
                                                value={newStudent.email}
@@ -229,6 +246,11 @@ function App() {
                                                type="email"
                                                id="email"
                                                placeholder="Enter your E-mail"/>
+                                        {errors.email && <span style={{
+                                            marginTop:"10px",
+                                            color:"red",
+                                            fontSize:"14px"
+                                        }}>This field is required</span>}
 
                                     </div>
                                     <div className="mb-2">
@@ -236,29 +258,41 @@ function App() {
                                                className=" text-grey-darker text-xm font-bold mb-2">
                                             Номер телефона
                                         </label>
-                                        <input required="required"
+                                        <input {...register("phone",{ required: true })}
                                                onChange={handleChange}
                                                value={newStudent.phone}
                                                className=" border rounded w-full py-3 px-3 text-grey-darker text-xm"
-                                               type="phone"
+                                               type="tel"
                                                id="phone"
                                                name="phone"
                                                placeholder="Enter your phone number"/>
+                                        {errors.phone && <span style={{
+                                            marginTop:"10px",
+                                            color:"red",
+                                            fontSize:"14px"
+                                        }}>This field is required</span>}
 
                                     </div>
                                     <div className="mb-2">
                                         <button onClick={() =>
-                                            setModalActive(false)
+                                            setModalActive(false) &&
+                                            setNewStudent({
+                                            name: "",
+                                            group: "",
+                                            year: "",
+                                            email: "",
+                                            phone: ""
+                                        })
                                         }
-                                            type="submit"
-                                            className=" mx-20 rounded-full py-2 px-10 text-white-300 bg-blue-500 hover:bg-sky-700 "
+                                                disabled={!isValid}
+                                                type="submit"
+                                                className=" mx-20 rounded-full py-2 px-10 text-white-300 bg-pink-500 hover:bg-red-900 "
                                         >
                                             {isEditing ?'Update': 'Create'}
                                         </button>
                                     </div>
                                 </div>
                             </form>
-
                         </div>
 
                     </div>
